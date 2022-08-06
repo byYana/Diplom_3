@@ -12,8 +12,8 @@ public class NewUser {
     }
 
     public static NewUser getRandomUser() {
-        String email = RandomStringUtils.randomAlphabetic(10) + "@yandex.ru";
-        String password = RandomStringUtils.randomAlphabetic(10);
+        String email = RandomStringUtils.randomAlphabetic(8) + "@yandex.ru";
+        String password = RandomStringUtils.randomAlphabetic(8);
         String name = RandomStringUtils.randomAlphabetic(8);
         return new NewUser(email, password, name);
     }
@@ -34,6 +34,10 @@ public class NewUser {
     public String getPassword() {
         return password;
     }
+
+   /* public String getDefectPassword() {
+        return password = RandomStringUtils.randomAlphabetic(5);
+    }*/
 
     public void setPassword(String password) {
         this.password = password;

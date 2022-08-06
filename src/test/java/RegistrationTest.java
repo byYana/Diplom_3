@@ -1,39 +1,66 @@
+import com.codeborne.selenide.Condition;
+import com.codeborne.selenide.Configuration;
+import com.codeborne.selenide.WebDriverRunner;
 import io.restassured.response.Response;
+import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.chrome.ChromeDriver;
+import org.openqa.selenium.chrome.ChromeOptions;
 
 import static com.codeborne.selenide.Selenide.open;
+import static com.codeborne.selenide.Selenide.page;
 
-public class RegistrationTest {
+public class RegistrationTest {         //**Регистрация**
     NewUser newUser;
-    String accessToken = null;
-    NewUser oldUser;
+    RegistrationPage registrationPage;
+    WebDriver driver;
 
     @Before
-    public void doBefore(){
-        newUser= NewUser.getRandomUser();
-        oldUser= new NewUser(newUser.getEmail(), newUser.getPassword());
+    public void doBefore() {
+        // Начало кода для запуска автотестов в Яндекс Браузере
+       /* ChromeOptions options = new ChromeOptions();
+        System.setProperty("webdriver.chrome.driver", "C:\\Users\\Yana\\courses\\Diplom_3\\src\\main\\resources\\yandexdriver.exe");
+        options.setBinary("C:\\Users\\Yana\\AppData\\Local\\Yandex\\YandexBrowser\\Application\\browser.exe");
+        options.addArguments("test-type=browser");
+        options.addArguments("chromeoptions.args", "--no-sandbox");
+        driver = new ChromeDriver(options);
+        WebDriverRunner.setWebDriver(driver);
+     */   // Конец кода для запуска автотестов в Яндекс Браузере
+        newUser = NewUser.getRandomUser();
+        registrationPage = open(RegistrationPage.URL, RegistrationPage.class);
     }
 
-    @After
+ /*   @After
     public void doAfter(){
-        if (accessToken == null) {
-         Response response=API.loginUser(oldUser);
-         accessToken = response.jsonPath().getString("accessToken");
-        }
-        API.deleteUser(accessToken);
-    }
+        driver.quit(); // код для запуска автотестов в Яндекс Браузере
+    }*/
 
     @Test
-    public void pressF(){
-        RegistrationPage registrationPage = open(RegistrationPage.URL, RegistrationPage.class);
+    public void checkRegistration() {               //~~-Успешную регистрацию.~~
         registrationPage.setInputName(newUser.getName());
         registrationPage.setInputEmail(newUser.getEmail());
         registrationPage.setInputPassword(newUser.getPassword());
         registrationPage.clickButton();
+        AuthorizationPage authorizationPage = page(AuthorizationPage.class);
+        //проверяем, что кнопку "Войти" появилась на экране
+        authorizationPage.getButtonAuthorization().shouldBe(Condition.visible);
+        //удаление пользователя
+        NewUser oldUser = new NewUser(newUser.getEmail(), newUser.getPassword());
+        Response response = API.loginUser(oldUser);
+        String accessToken = response.jsonPath().getString("accessToken");
+        API.deleteUser(accessToken);
     }
 
-
-
+    @Test
+    public void checkDefectRegistration() {        //-Ошибку для некорректного пароля. Минимальный пароль — шесть символов.
+        registrationPage.setInputName(newUser.getName());
+        registrationPage.setInputEmail(newUser.getEmail());
+        registrationPage.setInputPassword(RandomStringUtils.randomAlphabetic(5));
+        registrationPage.clickButton();
+        //проверяем что текст об ошибке появился
+        registrationPage.getTextError().shouldBe(Condition.visible);
+    }
 }
