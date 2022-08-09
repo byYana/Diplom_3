@@ -1,5 +1,9 @@
+import ForDeleteUser.API;
+import ForDeleteUser.Login;
+import PageAndUser.AuthorizationPage;
+import PageAndUser.NewUser;
+import PageAndUser.RegistrationPage;
 import com.codeborne.selenide.Condition;
-import com.codeborne.selenide.Configuration;
 import com.codeborne.selenide.WebDriverRunner;
 import io.restassured.response.Response;
 import org.apache.commons.lang3.RandomStringUtils;
@@ -12,6 +16,7 @@ import org.openqa.selenium.chrome.ChromeOptions;
 
 import static com.codeborne.selenide.Selenide.open;
 import static com.codeborne.selenide.Selenide.page;
+import static org.apache.http.HttpStatus.SC_OK;
 
 public class RegistrationTest {         //**Регистрация**
     NewUser newUser;
@@ -21,19 +26,19 @@ public class RegistrationTest {         //**Регистрация**
     @Before
     public void doBefore() {
         // Начало кода для запуска автотестов в Яндекс Браузере
-       /* ChromeOptions options = new ChromeOptions();
-        System.setProperty("webdriver.chrome.driver", "C:\\Users\\Yana\\courses\\Diplom_3\\src\\main\\resources\\yandexdriver.exe");
-        options.setBinary("C:\\Users\\Yana\\AppData\\Local\\Yandex\\YandexBrowser\\Application\\browser.exe");
+      /*  ChromeOptions options = new ChromeOptions();
+        System.setProperty("webdriver.chrome.driver", "src\\main\\resources\\yandexdriver.exe");
+        options.setBinary("C:\\Users\\Yana\\AppData\\Local\\Yandex\\YandexBrowser\\Application\\browser.exe");// указать путь до браузеру
         options.addArguments("test-type=browser");
         options.addArguments("chromeoptions.args", "--no-sandbox");
         driver = new ChromeDriver(options);
-        WebDriverRunner.setWebDriver(driver);
-     */   // Конец кода для запуска автотестов в Яндекс Браузере
+        WebDriverRunner.setWebDriver(driver);*/
+        // Конец кода для запуска автотестов в Яндекс Браузере
         newUser = NewUser.getRandomUser();
         registrationPage = open(RegistrationPage.URL, RegistrationPage.class);
     }
 
- /*   @After
+   /* @After
     public void doAfter(){
         driver.quit(); // код для запуска автотестов в Яндекс Браузере
     }*/
@@ -43,14 +48,14 @@ public class RegistrationTest {         //**Регистрация**
         registrationPage.setInputName(newUser.getName());
         registrationPage.setInputEmail(newUser.getEmail());
         registrationPage.setInputPassword(newUser.getPassword());
-        registrationPage.clickButton();
+        registrationPage.clickButtonRegistration();
         AuthorizationPage authorizationPage = page(AuthorizationPage.class);
         //проверяем, что кнопку "Войти" появилась на экране
         authorizationPage.getButtonAuthorization().shouldBe(Condition.visible);
         //удаление пользователя
         NewUser oldUser = new NewUser(newUser.getEmail(), newUser.getPassword());
         Response response = API.loginUser(oldUser);
-        String accessToken = response.jsonPath().getString("accessToken");
+        String accessToken = response.then().statusCode(SC_OK).extract().body().as(Login.class).getAccessToken();
         API.deleteUser(accessToken);
     }
 
@@ -59,7 +64,7 @@ public class RegistrationTest {         //**Регистрация**
         registrationPage.setInputName(newUser.getName());
         registrationPage.setInputEmail(newUser.getEmail());
         registrationPage.setInputPassword(RandomStringUtils.randomAlphabetic(5));
-        registrationPage.clickButton();
+        registrationPage.clickButtonRegistration();
         //проверяем что текст об ошибке появился
         registrationPage.getTextError().shouldBe(Condition.visible);
     }

@@ -1,3 +1,6 @@
+package ForDeleteUser;
+
+import PageAndUser.NewUser;
 import io.qameta.allure.Step;
 import io.restassured.http.ContentType;
 import io.restassured.response.Response;
@@ -10,9 +13,9 @@ public class API {
     private static final String HANDLE = "api/auth";
 
     @Step("Создание пользователя.")
-    public static void createUser(NewUser user) {
-        given().contentType(ContentType.JSON).accept(ContentType.JSON)
-                .body(user).when().post(URL + HANDLE + "/register").then().statusCode(200).and().body("success", equalTo(true));
+    public static Response createUser(NewUser user) {
+        return given().contentType(ContentType.JSON).accept(ContentType.JSON)
+                .body(user).when().post(URL + HANDLE + "/register");
     }
 
     @Step("Регистрация пользователя.")
@@ -21,15 +24,9 @@ public class API {
                 .body(user).when().post(URL + HANDLE + "/login");
     }
 
-    //@Step("Обновление токена.")
-   /* public static Response refreshToken(NewUser user) {
-        return given().contentType(ContentType.JSON)
-                .body(user).when().post(URL + HANDLE + "/token");
-    }*/
-
     @Step("Удаление пользователя.")
     public static void deleteUser(String token) {
         given().contentType(ContentType.JSON).header("Authorization", token)
-                .delete(URL + HANDLE+ "/user").then().statusCode(202).and().body("success", equalTo(true));
+                .delete(URL + HANDLE + "/user").then().statusCode(202).and().body("success", equalTo(true));
     }
 }

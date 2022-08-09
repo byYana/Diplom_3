@@ -1,3 +1,5 @@
+package PageAndUser;
+
 import org.apache.commons.lang3.RandomStringUtils;
 
 public class NewUser {
@@ -34,10 +36,6 @@ public class NewUser {
     public String getPassword() {
         return password;
     }
-
-   /* public String getDefectPassword() {
-        return password = RandomStringUtils.randomAlphabetic(5);
-    }*/
 
     public void setPassword(String password) {
         this.password = password;

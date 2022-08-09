@@ -1,6 +1,9 @@
 import ForDeleteUser.API;
 import ForDeleteUser.Login;
-import PageAndUser.*;
+import PageAndUser.AuthorizationPage;
+import PageAndUser.MainPage;
+import PageAndUser.NewUser;
+import PageAndUser.ProfilePage;
 import com.codeborne.selenide.Condition;
 import com.codeborne.selenide.Selenide;
 import io.restassured.response.Response;
@@ -13,7 +16,7 @@ import static com.codeborne.selenide.Selenide.open;
 import static com.codeborne.selenide.Selenide.page;
 import static org.apache.http.HttpStatus.SC_OK;
 
-public class AuthorizationTest {                    //**Вход**
+public class PersonalCabinetTest {
     NewUser newUser;
     MainPage mainPage;
     AuthorizationPage authorizationPage;
@@ -44,65 +47,63 @@ public class AuthorizationTest {                    //**Вход**
     }
 
     @Test
-    public void checkLoginFromMainPage() {                      //-вход по кнопке «Войти в аккаунт» на главной,
-        mainPage = open(MainPage.URL, MainPage.class);
-        mainPage.clickButtonLogIntoAccount();
-        authorizationPage = page(AuthorizationPage.class);
-        authorizationPage.login(newUser.getEmail(),newUser.getPassword());
-        authorizationPage.clickButtonAuthorization();
-        //проверяем, что кнопку "Оформить заказ" появилась на экране
-        mainPage.getButtonMakeOrder().shouldBe(Condition.visible);
-    }
-
-    @Test
-    public void checkLoginPersonalCabinet() {                      //-вход через кнопку «Личный кабинет»,
+    public void checkPersonalCabinetLogout() {                //Проверь переход по клику на «Личный кабинет». Неавторизованный пользователь
         mainPage = open(MainPage.URL, MainPage.class);
         mainPage.clickButtonPersonal();
         authorizationPage = page(AuthorizationPage.class);
+        //проверяем, что кнопку "Войти" появилась на экране
+        authorizationPage.getButtonAuthorization().shouldBe(Condition.visible);
+    }
+
+    @Test
+    public void checkPersonalCabinetLogin() {                //Проверь переход по клику на «Личный кабинет». Авторизованный пользователь
+        authorizationPage = open(AuthorizationPage.URL, AuthorizationPage.class);
         authorizationPage.login(newUser.getEmail(),newUser.getPassword());
         authorizationPage.clickButtonAuthorization();
+        mainPage = page(MainPage.class);
+        mainPage.clickButtonPersonal();
+        ProfilePage profilePage = page(ProfilePage.class);
+        //проверяем, что кнопку "Выйти" появилась на экране
+        profilePage.getButtonExit().shouldBe(Condition.visible);
+    }
+
+    @Test
+    public void checkGoToConstructor() {            //Проверь переход по клику на «Конструктор»
+        authorizationPage = open(AuthorizationPage.URL, AuthorizationPage.class);
+        authorizationPage.login(newUser.getEmail(),newUser.getPassword());
+        authorizationPage.clickButtonAuthorization();
+        mainPage = page(MainPage.class);
+        mainPage.clickButtonPersonal();
+        ProfilePage profilePage = page(ProfilePage.class);
+        profilePage.clickConstructor();
         //проверяем, что кнопку "Оформить заказ" появилась на экране
         mainPage.getButtonMakeOrder().shouldBe(Condition.visible);
     }
 
     @Test
-    public void checkLoginRegistrationForm() {                     //-вход через кнопку в форме регистрации,
-        RegistrationPage registrationPage = open(RegistrationPage.URL, RegistrationPage.class);
-        registrationPage.clickButtonLogin();
-        authorizationPage = page(AuthorizationPage.class);
+    public void checkGoToLogo() {            //Проверь переход по клику на логотип Stellar Burgers.
+        authorizationPage = open(AuthorizationPage.URL, AuthorizationPage.class);
         authorizationPage.login(newUser.getEmail(),newUser.getPassword());
         authorizationPage.clickButtonAuthorization();
-        MainPage mainPage = page(MainPage.class);
+        mainPage = page(MainPage.class);
+        mainPage.clickButtonPersonal();
+        ProfilePage profilePage = page(ProfilePage.class);
+        profilePage.clickLogo();
         //проверяем, что кнопку "Оформить заказ" появилась на экране
         mainPage.getButtonMakeOrder().shouldBe(Condition.visible);
     }
 
     @Test
-    public void checkLoginForgotPassword() {    //-вход через кнопку в форме восстановления пароля. Шаг 1.
-        authorizationPage = open(AuthorizationPage.URL,AuthorizationPage.class);
-        authorizationPage.clickButtonRestorePassword();
-        ForgotPasswordPage forgotPasswordPage = page(ForgotPasswordPage.class);
-        forgotPasswordPage.clickButtonAuthorization();
+    public void check() {           //Проверь выход по кнопке «Выйти» в личном кабинете.
+        authorizationPage = open(AuthorizationPage.URL, AuthorizationPage.class);
         authorizationPage.login(newUser.getEmail(),newUser.getPassword());
         authorizationPage.clickButtonAuthorization();
-        MainPage mainPage = page(MainPage.class);
-        //проверяем, что кнопку "Оформить заказ" появилась на экране
-        mainPage.getButtonMakeOrder().shouldBe(Condition.visible);
-    }
-
-    @Test
-    public void checkLoginResetPassword() {    //-вход через кнопку в форме восстановления пароля. Шаг 2.
-        authorizationPage = open(AuthorizationPage.URL,AuthorizationPage.class);
-        authorizationPage.clickButtonRestorePassword();
-        ForgotPasswordPage forgotPasswordPage = page(ForgotPasswordPage.class);
-        forgotPasswordPage.setInputEmail(newUser.getEmail());
-        forgotPasswordPage.clickButtonRestore();
-        ResetPasswordPage resetPasswordPage = page(ResetPasswordPage.class);
-        resetPasswordPage.clickButtonAuthorization();
-        authorizationPage.login(newUser.getEmail(),newUser.getPassword());
-        authorizationPage.clickButtonAuthorization();
-        MainPage mainPage = page(MainPage.class);
-        //проверяем, что кнопку "Оформить заказ" появилась на экране
-        mainPage.getButtonMakeOrder().shouldBe(Condition.visible);
+        mainPage = page(MainPage.class);
+        mainPage.clickButtonPersonal();
+        ProfilePage profilePage = page(ProfilePage.class);
+        profilePage.clickButtonExit();
+        //проверяем, что кнопку "Войти" появилась на экране
+        authorizationPage.getButtonAuthorization().shouldBe(Condition.visible);
     }
 }
+
