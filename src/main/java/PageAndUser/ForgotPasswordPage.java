@@ -34,4 +34,10 @@ public class ForgotPasswordPage {
     public void setInputEmail(String mail) {
         inputEmail.setValue(mail);
     }
+
+    @Step("Восстановить пароль.")
+    public void restore(String mail) {
+        setInputEmail(mail);
+        clickButtonRestore();
+    }
 }

@@ -18,7 +18,7 @@ public class AuthorizationTest {
     MainPage mainPage;
     AuthorizationPage authorizationPage;
     String accessToken;
-    boolean yandex = false; // Если надо тесты запустить в Яндекс браузере, то переменная - true, для Хрома - false
+    boolean yandex = false; // Если надо тесты запустить в Яндекс браузере, то переменная = true, для Хрома = false
 
     @Before
     public void doBefore() {
@@ -32,6 +32,12 @@ public class AuthorizationTest {
 
     @After
     public void doAfter() {
+        authorizationPage.login(newUser.getEmail(), newUser.getPassword());
+        if (mainPage == null) {
+            mainPage = page(MainPage.class);
+        }
+        //проверяем, что кнопку "Оформить заказ" появилась на экране
+        mainPage.getButtonMakeOrder().shouldBe(Condition.visible);
         API.deleteUser(accessToken);
         if (yandex) {
             YandexBrowser.doAfter();
@@ -46,9 +52,6 @@ public class AuthorizationTest {
         mainPage = open(MainPage.URL, MainPage.class);
         mainPage.clickButtonLogIntoAccount();
         authorizationPage = page(AuthorizationPage.class);
-        authorizationPage.login(newUser.getEmail(), newUser.getPassword());
-        //проверяем, что кнопку "Оформить заказ" появилась на экране
-        mainPage.getButtonMakeOrder().shouldBe(Condition.visible);
     }
 
     @Test
@@ -57,9 +60,6 @@ public class AuthorizationTest {
         mainPage = open(MainPage.URL, MainPage.class);
         mainPage.clickButtonPersonal();
         authorizationPage = page(AuthorizationPage.class);
-        authorizationPage.login(newUser.getEmail(), newUser.getPassword());
-        //проверяем, что кнопку "Оформить заказ" появилась на экране
-        mainPage.getButtonMakeOrder().shouldBe(Condition.visible);
     }
 
     @Test
@@ -68,10 +68,6 @@ public class AuthorizationTest {
         RegistrationPage registrationPage = open(RegistrationPage.URL, RegistrationPage.class);
         registrationPage.clickButtonLogin();
         authorizationPage = page(AuthorizationPage.class);
-        authorizationPage.login(newUser.getEmail(), newUser.getPassword());
-        MainPage mainPage = page(MainPage.class);
-        //проверяем, что кнопку "Оформить заказ" появилась на экране
-        mainPage.getButtonMakeOrder().shouldBe(Condition.visible);
     }
 
     @Test
@@ -81,10 +77,6 @@ public class AuthorizationTest {
         authorizationPage.clickButtonRestorePassword();
         ForgotPasswordPage forgotPasswordPage = page(ForgotPasswordPage.class);
         forgotPasswordPage.clickButtonAuthorization();
-        authorizationPage.login(newUser.getEmail(), newUser.getPassword());
-        MainPage mainPage = page(MainPage.class);
-        //проверяем, что кнопку "Оформить заказ" появилась на экране
-        mainPage.getButtonMakeOrder().shouldBe(Condition.visible);
     }
 
     @Test
@@ -93,13 +85,8 @@ public class AuthorizationTest {
         authorizationPage = open(AuthorizationPage.URL, AuthorizationPage.class);
         authorizationPage.clickButtonRestorePassword();
         ForgotPasswordPage forgotPasswordPage = page(ForgotPasswordPage.class);
-        forgotPasswordPage.setInputEmail(newUser.getEmail());
-        forgotPasswordPage.clickButtonRestore();
+        forgotPasswordPage.restore(newUser.getEmail());
         ResetPasswordPage resetPasswordPage = page(ResetPasswordPage.class);
         resetPasswordPage.clickButtonAuthorization();
-        authorizationPage.login(newUser.getEmail(), newUser.getPassword());
-        MainPage mainPage = page(MainPage.class);
-        //проверяем, что кнопку "Оформить заказ" появилась на экране
-        mainPage.getButtonMakeOrder().shouldBe(Condition.visible);
     }
 }
