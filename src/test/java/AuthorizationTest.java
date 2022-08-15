@@ -3,34 +3,28 @@ import ForDeleteUser.Login;
 import PageAndUser.*;
 import com.codeborne.selenide.Condition;
 import com.codeborne.selenide.Selenide;
+import io.qameta.allure.junit4.DisplayName;
 import io.restassured.response.Response;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.openqa.selenium.WebDriver;
 
 import static com.codeborne.selenide.Selenide.open;
 import static com.codeborne.selenide.Selenide.page;
 import static org.apache.http.HttpStatus.SC_OK;
 
-public class AuthorizationTest {                    //**Вход**
+public class AuthorizationTest {
     NewUser newUser;
     MainPage mainPage;
     AuthorizationPage authorizationPage;
     String accessToken;
-    WebDriver driver;
+    boolean yandex = false; // Если надо тесты запустить в Яндекс браузере, то переменная - true, для Хрома - false
 
     @Before
     public void doBefore() {
-        // Начало кода для запуска автотестов в Яндекс Браузере
-       /* ChromeOptions options = new ChromeOptions();
-        System.setProperty("webdriver.chrome.driver", "src\\main\\resources\\yandexdriver.exe");
-        options.setBinary("C:\\Users\\Yana\\AppData\\Local\\Yandex\\YandexBrowser\\Application\\browser.exe");// указать путь до браузеру
-        options.addArguments("test-type=browser");
-        options.addArguments("chromeoptions.args", "--no-sandbox");
-        driver = new ChromeDriver(options);
-        WebDriverRunner.setWebDriver(driver);
-     */   // Конец кода для запуска автотестов в Яндекс Браузере
+        if (yandex) {
+            YandexBrowser.doBefore();
+        }
         newUser = NewUser.getRandomUser();
         Response responseCreate = API.createUser(newUser);
         accessToken = responseCreate.then().statusCode(SC_OK).extract().body().as(Login.class).getAccessToken();
@@ -38,69 +32,72 @@ public class AuthorizationTest {                    //**Вход**
 
     @After
     public void doAfter() {
-        //driver.quit(); // код для запуска автотестов в Яндекс Браузере
         API.deleteUser(accessToken);
-        Selenide.clearBrowserCookies();
+        if (yandex) {
+            YandexBrowser.doAfter();
+        } else {
+            Selenide.clearBrowserCookies();
+        }
     }
 
     @Test
-    public void checkLoginFromMainPage() {                      //-вход по кнопке «Войти в аккаунт» на главной,
+    @DisplayName("Вход по кнопке «Войти в аккаунт» на главной странице.")
+    public void checkLoginFromMainPage() {
         mainPage = open(MainPage.URL, MainPage.class);
         mainPage.clickButtonLogIntoAccount();
         authorizationPage = page(AuthorizationPage.class);
-        authorizationPage.login(newUser.getEmail(),newUser.getPassword());
-        authorizationPage.clickButtonAuthorization();
+        authorizationPage.login(newUser.getEmail(), newUser.getPassword());
         //проверяем, что кнопку "Оформить заказ" появилась на экране
         mainPage.getButtonMakeOrder().shouldBe(Condition.visible);
     }
 
     @Test
-    public void checkLoginPersonalCabinet() {                      //-вход через кнопку «Личный кабинет»,
+    @DisplayName("Вход через кнопку «Личный кабинет».")
+    public void checkLoginPersonalCabinet() {
         mainPage = open(MainPage.URL, MainPage.class);
         mainPage.clickButtonPersonal();
         authorizationPage = page(AuthorizationPage.class);
-        authorizationPage.login(newUser.getEmail(),newUser.getPassword());
-        authorizationPage.clickButtonAuthorization();
+        authorizationPage.login(newUser.getEmail(), newUser.getPassword());
         //проверяем, что кнопку "Оформить заказ" появилась на экране
         mainPage.getButtonMakeOrder().shouldBe(Condition.visible);
     }
 
     @Test
-    public void checkLoginRegistrationForm() {                     //-вход через кнопку в форме регистрации,
+    @DisplayName("Вход через кнопку в форме регистрации.")
+    public void checkLoginRegistrationForm() {
         RegistrationPage registrationPage = open(RegistrationPage.URL, RegistrationPage.class);
         registrationPage.clickButtonLogin();
         authorizationPage = page(AuthorizationPage.class);
-        authorizationPage.login(newUser.getEmail(),newUser.getPassword());
-        authorizationPage.clickButtonAuthorization();
+        authorizationPage.login(newUser.getEmail(), newUser.getPassword());
         MainPage mainPage = page(MainPage.class);
         //проверяем, что кнопку "Оформить заказ" появилась на экране
         mainPage.getButtonMakeOrder().shouldBe(Condition.visible);
     }
 
     @Test
-    public void checkLoginForgotPassword() {    //-вход через кнопку в форме восстановления пароля. Шаг 1.
-        authorizationPage = open(AuthorizationPage.URL,AuthorizationPage.class);
+    @DisplayName("Вход через кнопку в форме восстановления пароля. Шаг 1.")
+    public void checkLoginForgotPassword() {
+        authorizationPage = open(AuthorizationPage.URL, AuthorizationPage.class);
         authorizationPage.clickButtonRestorePassword();
         ForgotPasswordPage forgotPasswordPage = page(ForgotPasswordPage.class);
         forgotPasswordPage.clickButtonAuthorization();
-        authorizationPage.login(newUser.getEmail(),newUser.getPassword());
-        authorizationPage.clickButtonAuthorization();
+        authorizationPage.login(newUser.getEmail(), newUser.getPassword());
         MainPage mainPage = page(MainPage.class);
         //проверяем, что кнопку "Оформить заказ" появилась на экране
         mainPage.getButtonMakeOrder().shouldBe(Condition.visible);
     }
 
     @Test
-    public void checkLoginResetPassword() {    //-вход через кнопку в форме восстановления пароля. Шаг 2.
-        authorizationPage = open(AuthorizationPage.URL,AuthorizationPage.class);
+    @DisplayName("Вход через кнопку в форме восстановления пароля. Шаг 2.")
+    public void checkLoginResetPassword() {
+        authorizationPage = open(AuthorizationPage.URL, AuthorizationPage.class);
         authorizationPage.clickButtonRestorePassword();
         ForgotPasswordPage forgotPasswordPage = page(ForgotPasswordPage.class);
         forgotPasswordPage.setInputEmail(newUser.getEmail());
         forgotPasswordPage.clickButtonRestore();
         ResetPasswordPage resetPasswordPage = page(ResetPasswordPage.class);
         resetPasswordPage.clickButtonAuthorization();
-        authorizationPage.login(newUser.getEmail(),newUser.getPassword());
-        authorizationPage.clickButtonAuthorization();
+        authorizationPage.login(newUser.getEmail(), newUser.getPassword());
         MainPage mainPage = page(MainPage.class);
         //проверяем, что кнопку "Оформить заказ" появилась на экране
         mainPage.getButtonMakeOrder().shouldBe(Condition.visible);

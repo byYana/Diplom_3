@@ -63,4 +63,13 @@ public class RegistrationPage {
     public void clickButtonLogin() {
         buttonRegistration.click();
     }
+
+    @Step("Регистрация")
+    public void registration(String name, String mail, String password) {
+        setInputName(name);
+        setInputEmail(mail);
+        setInputPassword(password);
+        clickButtonRegistration();
+    }
+
 }

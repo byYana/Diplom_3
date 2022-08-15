@@ -49,8 +49,9 @@ public class AuthorizationPage {
     }
 
     @Step("Авторизация")
-    public void login(String mail,String password){
+    public void login(String mail, String password){
         setInputEmail(mail);
         setInputPassword(password);
+        clickButtonAuthorization();
     }
 }

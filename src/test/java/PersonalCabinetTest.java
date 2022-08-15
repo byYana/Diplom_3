@@ -1,16 +1,13 @@
 import ForDeleteUser.API;
 import ForDeleteUser.Login;
-import PageAndUser.AuthorizationPage;
-import PageAndUser.MainPage;
-import PageAndUser.NewUser;
-import PageAndUser.ProfilePage;
+import PageAndUser.*;
 import com.codeborne.selenide.Condition;
 import com.codeborne.selenide.Selenide;
+import io.qameta.allure.junit4.DisplayName;
 import io.restassured.response.Response;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.openqa.selenium.WebDriver;
 
 import static com.codeborne.selenide.Selenide.open;
 import static com.codeborne.selenide.Selenide.page;
@@ -21,19 +18,13 @@ public class PersonalCabinetTest {
     MainPage mainPage;
     AuthorizationPage authorizationPage;
     String accessToken;
-    WebDriver driver;
+    boolean yandex = false; // Если надо тесты запустить в Яндекс браузере, то переменная - true, для Хрома - false
 
     @Before
     public void doBefore() {
-        // Начало кода для запуска автотестов в Яндекс Браузере
-       /* ChromeOptions options = new ChromeOptions();
-        System.setProperty("webdriver.chrome.driver", "src\\main\\resources\\yandexdriver.exe");
-        options.setBinary("C:\\Users\\Yana\\AppData\\Local\\Yandex\\YandexBrowser\\Application\\browser.exe");// указать путь до браузеру
-        options.addArguments("test-type=browser");
-        options.addArguments("chromeoptions.args", "--no-sandbox");
-        driver = new ChromeDriver(options);
-        WebDriverRunner.setWebDriver(driver);
-     */   // Конец кода для запуска автотестов в Яндекс Браузере
+        if (yandex) {
+            YandexBrowser.doBefore();
+        }
         newUser = NewUser.getRandomUser();
         Response responseCreate = API.createUser(newUser);
         accessToken = responseCreate.then().statusCode(SC_OK).extract().body().as(Login.class).getAccessToken();
@@ -41,13 +32,17 @@ public class PersonalCabinetTest {
 
     @After
     public void doAfter() {
-        //driver.quit(); // код для запуска автотестов в Яндекс Браузере
         API.deleteUser(accessToken);
-        Selenide.clearBrowserCookies();
+        if (yandex) {
+            YandexBrowser.doAfter();
+        } else {
+            Selenide.clearBrowserCookies();
+        }
     }
 
     @Test
-    public void checkPersonalCabinetLogout() {                //Проверь переход по клику на «Личный кабинет». Неавторизованный пользователь
+    @DisplayName("Проверка перехода по клику на «Личный кабинет». Неавторизованный пользователь.")
+    public void checkPersonalCabinetLogout() {
         mainPage = open(MainPage.URL, MainPage.class);
         mainPage.clickButtonPersonal();
         authorizationPage = page(AuthorizationPage.class);
@@ -56,10 +51,10 @@ public class PersonalCabinetTest {
     }
 
     @Test
-    public void checkPersonalCabinetLogin() {                //Проверь переход по клику на «Личный кабинет». Авторизованный пользователь
+    @DisplayName("Проверка перехода по клику на «Личный кабинет». Авторизованный пользователь.")
+    public void checkPersonalCabinetLogin() {
         authorizationPage = open(AuthorizationPage.URL, AuthorizationPage.class);
-        authorizationPage.login(newUser.getEmail(),newUser.getPassword());
-        authorizationPage.clickButtonAuthorization();
+        authorizationPage.login(newUser.getEmail(), newUser.getPassword());
         mainPage = page(MainPage.class);
         mainPage.clickButtonPersonal();
         ProfilePage profilePage = page(ProfilePage.class);
@@ -68,10 +63,10 @@ public class PersonalCabinetTest {
     }
 
     @Test
-    public void checkGoToConstructor() {            //Проверь переход по клику на «Конструктор»
+    @DisplayName("Проверка перехода по клику на «Конструктор»")
+    public void checkGoToConstructor() {
         authorizationPage = open(AuthorizationPage.URL, AuthorizationPage.class);
-        authorizationPage.login(newUser.getEmail(),newUser.getPassword());
-        authorizationPage.clickButtonAuthorization();
+        authorizationPage.login(newUser.getEmail(), newUser.getPassword());
         mainPage = page(MainPage.class);
         mainPage.clickButtonPersonal();
         ProfilePage profilePage = page(ProfilePage.class);
@@ -81,10 +76,10 @@ public class PersonalCabinetTest {
     }
 
     @Test
-    public void checkGoToLogo() {            //Проверь переход по клику на логотип Stellar Burgers.
+    @DisplayName("Проверка перехода по клику на логотип Stellar Burgers.")
+    public void checkGoToLogo() {
         authorizationPage = open(AuthorizationPage.URL, AuthorizationPage.class);
-        authorizationPage.login(newUser.getEmail(),newUser.getPassword());
-        authorizationPage.clickButtonAuthorization();
+        authorizationPage.login(newUser.getEmail(), newUser.getPassword());
         mainPage = page(MainPage.class);
         mainPage.clickButtonPersonal();
         ProfilePage profilePage = page(ProfilePage.class);
@@ -94,10 +89,10 @@ public class PersonalCabinetTest {
     }
 
     @Test
-    public void check() {           //Проверь выход по кнопке «Выйти» в личном кабинете.
+    @DisplayName("Проверка выхода по кнопке «Выйти» в личном кабинете.")
+    public void check() {
         authorizationPage = open(AuthorizationPage.URL, AuthorizationPage.class);
-        authorizationPage.login(newUser.getEmail(),newUser.getPassword());
-        authorizationPage.clickButtonAuthorization();
+        authorizationPage.login(newUser.getEmail(), newUser.getPassword());
         mainPage = page(MainPage.class);
         mainPage.clickButtonPersonal();
         ProfilePage profilePage = page(ProfilePage.class);

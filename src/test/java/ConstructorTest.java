@@ -2,35 +2,30 @@ import ForDeleteUser.API;
 import ForDeleteUser.Login;
 import PageAndUser.MainPage;
 import PageAndUser.NewUser;
+import PageAndUser.YandexBrowser;
 import com.codeborne.selenide.Selenide;
+import io.qameta.allure.junit4.DisplayName;
 import io.restassured.response.Response;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.openqa.selenium.WebDriver;
 
 import static com.codeborne.selenide.Selenide.open;
 import static org.apache.http.HttpStatus.SC_OK;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 
-public class ConstructorTest {          //Проверь, что работают переходы к разделам:
+public class ConstructorTest {
     NewUser newUser;
     MainPage mainPage;
     String accessToken;
-    WebDriver driver;
+    boolean yandex = false; // Если надо тесты запустить в Яндекс браузере, то переменная - true, для Хрома - false
 
     @Before
     public void doBefore() {
-        // Начало кода для запуска автотестов в Яндекс Браузере
-       /* ChromeOptions options = new ChromeOptions();
-        System.setProperty("webdriver.chrome.driver", "src\\main\\resources\\yandexdriver.exe");
-        options.setBinary("C:\\Users\\Yana\\AppData\\Local\\Yandex\\YandexBrowser\\Application\\browser.exe");// указать путь до браузеру
-        options.addArguments("test-type=browser");
-        options.addArguments("chromeoptions.args", "--no-sandbox");
-        driver = new ChromeDriver(options);
-        WebDriverRunner.setWebDriver(driver);
-     */   // Конец кода для запуска автотестов в Яндекс Браузере
+        if (yandex) {
+            YandexBrowser.doBefore();
+        }
         newUser = NewUser.getRandomUser();
         Response responseCreate = API.createUser(newUser);
         accessToken = responseCreate.then().statusCode(SC_OK).extract().body().as(Login.class).getAccessToken();
@@ -38,13 +33,17 @@ public class ConstructorTest {          //Проверь, что работаю�
 
     @After
     public void doAfter() {
-        //driver.quit(); // код для запуска автотестов в Яндекс Браузере
         API.deleteUser(accessToken);
-        Selenide.clearBrowserCookies();
+        if (yandex) {
+            YandexBrowser.doAfter();
+        } else {
+            Selenide.clearBrowserCookies();
+        }
     }
 
     @Test
-    public void checkSauces() {                   // -«Соусы»,
+    @DisplayName("Проверка перехода к разделу «Соусы».")
+    public void checkSauces() {
         mainPage = open(MainPage.URL, MainPage.class);
         // Проверяем, что кнопка не активна и мы не находимся на данном разделе
         assertNotEquals(MainPage.ACTIVE_SAUCES, mainPage.getAttributeSauces());
@@ -54,7 +53,8 @@ public class ConstructorTest {          //Проверь, что работаю�
     }
 
     @Test
-    public void checkToppings() {                   // -«Начинки»,
+    @DisplayName("Проверка перехода к разделу «Начинки».")
+    public void checkToppings() {
         mainPage = open(MainPage.URL, MainPage.class);
         // Проверяем, что кнопка не активна и мы не находимся на данном разделе
         assertNotEquals(MainPage.ACTIVE_TOPPINGS, mainPage.getAttributeToppings());
@@ -64,7 +64,8 @@ public class ConstructorTest {          //Проверь, что работаю�
     }
 
     @Test
-    public void checkBuns() {                   // -«Булки>»,
+    @DisplayName("Проверка перехода к разделу «Булки».")
+    public void checkBuns() {
         mainPage = open(MainPage.URL, MainPage.class);
         // Проверяем, что после клика, кнопка активна и мы находимся на данном разделе
         assertEquals(MainPage.ACTIVE_BUNS, mainPage.getAttributeBuns());
